@@ -5,31 +5,35 @@ import (
 	"sync"
 )
 
+// Store is an in-memory key/value string database.
 type Store struct {
-	keys *sync.Map
+	store *sync.Map
 }
 
-// Returns a new, empty store
-func StoreService() Store {
+// Service returns an empty
+func Service() Store {
 	s := Store{}
-	s.keys = new(sync.Map)
+	s.store = new(sync.Map)
 	return s
 }
 
 // Set a key
 func (s Store) Set(key string, value string) {
-	s.keys.Store(key, value)
+	s.store.Store(key, value)
 }
 
 // Get a key
 func (s Store) Get(key string) (string, bool) {
-	val, exist := s.keys.Load(key)
-	return string(val.(string)), exist
+	val, exist := s.store.Load(key)
+	if exist {
+		return string(val.(string)), true
+	}
+	return "", false
 }
 
 // Delete a key
 func (s Store) Delete(key string) {
-	s.keys.Delete(key)
+	s.store.Delete(key)
 }
 
 // Increment a key. If doesn't exist, increment from zero.
@@ -39,12 +43,13 @@ func (s Store) Increment(key string) error {
 		s.Set(key, "1")
 		return nil
 	}
-	if n, err := strconv.Atoi(val); err == nil {
+
+	n, err := strconv.Atoi(val)
+	if err == nil {
 		s.Set(key, strconv.Itoa(n+1))
 		return nil
-	} else {
-		return err
 	}
+	return err
 }
 
 // Decrement a key. If doesn't exist, decrement from zero.
@@ -54,15 +59,21 @@ func (s Store) Decrement(key string) error {
 		s.Set(key, "-1")
 		return nil
 	}
-	if n, err := strconv.Atoi(val); err == nil {
+
+	n, err := strconv.Atoi(val)
+	if err == nil {
 		s.Set(key, strconv.Itoa(n-1))
 		return nil
-	} else {
-		return err
 	}
+	return err
 }
 
-// Delete all keys
-func (s Store) Flush() {
-	s.keys = new(sync.Map)
+// Append to a key.
+func (s Store) Append(key string, value string) bool {
+	current, exists := s.Get(key)
+	if !exists {
+		return false
+	}
+	s.Set(key, current+value)
+	return true
 }
