@@ -22,6 +22,7 @@ func setup() {
 	http.HandleFunc("/delete", Delete)
 	http.HandleFunc("/increment", Increment)
 	http.HandleFunc("/decrement", Decrement)
+	http.HandleFunc("/append", Append)
 	http.HandleFunc("/flush", Flush)
 }
 
@@ -84,7 +85,7 @@ func Decrement(w http.ResponseWriter, r *http.Request) {
 // Append to a key in the store.
 // Status code: 204 if key exists else 400.
 func Append(w http.ResponseWriter, r *http.Request) {
-	if exists := s.Append(r.URL.Query().Get("key"), r.URL.Query().Get("value")); exists == false {
+	if exists := s.Append(r.URL.Query().Get("key"), r.URL.Query().Get("value")); exists == true {
 		w.WriteHeader(http.StatusNoContent)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
