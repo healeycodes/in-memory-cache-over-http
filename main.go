@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"sync"
-	store "github.com/healeycodes/key-value-store/store"
+	store "github.com/healeycodes/key-value-store/store/store"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-package github.com/healeycodes/key-value-store/store
+package store
 
 import (
 	"sync"
