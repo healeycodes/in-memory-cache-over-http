@@ -4,53 +4,33 @@ import (
 	"sync"
 )
 
-var keys sync.Map
+type Store struct {
+	keys *sync.Map
+}
 
-type values struct {
-	data []interface{}
+// Returns a new, empty store
+func StoreService() Store {
+	s := Store{}
+	s.keys = new(sync.Map)
+	return s
 }
 
 // Set a key
-func Set(key string, value interface{}) {
-	keys.Store(key, value)
+func (s Store) Set(key string, value interface{}) {
+	s.keys.Store(key, value)
 }
 
 // Get a key
-func Get(key string) (value interface{}, ok bool) {
-	return keys.Load(key)
+func (s Store) Get(key string) (interface{}, bool) {
+	return s.keys.Load(key)
 }
 
 // Delete a key
-func Delete(key string) {
-	keys.Delete(key)
+func (s Store) Delete(key string) {
+	s.keys.Delete(key)
 }
 
-// Returns the values of all specified keys
-// nil is used where the key doesn't exist
-func Mget(keys []string) values {
-	tmp := values{}
-	for i := range keys {
-		val, has := Get(keys[i])
-		if !has {
-			tmp.data = append(tmp.data, nil)
-		} else {
-			tmp.data = append(tmp.data, val)
-		}
-	}
-	return tmp
-}
-
-// Sets the values of all specified keys
-// array is parsed as <key> <value> repeated
-func Mset(keysValues []string) {
-	for i := range keysValues {
-		if i%2 == 0 {
-			Set(keysValues[i], keysValues[i+1])
-		}
-	}
-}
-
-// Clear everything
-func Flush() {
-	keys := new(sync.Map)
+// Delete all keys
+func (s Store) Flush() {
+	s.keys = new(sync.Map)
 }
