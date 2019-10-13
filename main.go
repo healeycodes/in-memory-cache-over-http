@@ -3,31 +3,34 @@ package main
 import (
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/healeycodes/key-value-store/store"
 )
 
-var s store.Store
+var s *store.Store
 
 func main() {
-	s = store.Service()
-	setup()
-	start()
+	New()
+	Setup()
+	Start()
 }
 
 // Setup path handlers
-func setup() {
+func Setup() {
 	http.HandleFunc("/get", Get)
 	http.HandleFunc("/set", Set)
 	http.HandleFunc("/delete", Delete)
+	http.HandleFunc("/checkandset", CheckAndSet)
 	http.HandleFunc("/increment", Increment)
 	http.HandleFunc("/decrement", Decrement)
 	http.HandleFunc("/append", Append)
+	http.HandleFunc("/prepend", Prepend)
 	http.HandleFunc("/flush", Flush)
 }
 
-// Listen on PORT. Defaults to 8000.
-func start() {
+// Start Listening on PORT. Defaults to 8000.
+func Start() {
 	err := http.ListenAndServe(getEnv("PORT", ":8000"), nil)
 	if err != nil {
 		panic(err)
@@ -62,20 +65,27 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// Increment a key in the store. Sets 1 if new key.
+// CheckAndSet a key in the store if it matches the compare value.
+// Status code: 204 if matches else 400
+func CheckAndSet(w http.ResponseWriter, r *http.Request) {
+	s.CheckAndSet(r.URL.Query().Get("key"), r.URL.Query().Get("value"), r.URL.Query().Get("compare"))
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// Increment a key in the store by an amount. If key missing, set the amount.
 // Status code: 204 if incrementable else 400.
 func Increment(w http.ResponseWriter, r *http.Request) {
-	if err := s.Increment(r.URL.Query().Get("key")); err == nil {
+	if err := s.Increment(r.URL.Query().Get("key"), r.URL.Query().Get("value")); err == nil {
 		w.WriteHeader(http.StatusNoContent)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 }
 
-// Decrement a key in the store. Sets -1 if new key.
+// Decrement a key in the store by an amount. If key missing, set the amount.
 // Status code: 204 if decrementable else 400.
 func Decrement(w http.ResponseWriter, r *http.Request) {
-	if err := s.Decrement(r.URL.Query().Get("key")); err == nil {
+	if err := s.Decrement(r.URL.Query().Get("key"), r.URL.Query().Get("value")); err == nil {
 		w.WriteHeader(http.StatusNoContent)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
@@ -92,10 +102,26 @@ func Append(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Flush all keys in the store.
+// Prepend to a key in the store.
 // Status code: 204 if key exists else 400.
+func Prepend(w http.ResponseWriter, r *http.Request) {
+	if exists := s.Prepend(r.URL.Query().Get("key"), r.URL.Query().Get("value")); exists == true {
+		w.WriteHeader(http.StatusNoContent)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}
+
+// Flush all keys.
 func Flush(w http.ResponseWriter, r *http.Request) {
-	s = store.Service()
+	s.Flush()
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// New store.
+func New() {
+	size, _ := strconv.Atoi(getEnv("SIZE", "2"))
+	s = store.Service(size)
 }
 
 // Gets an ENV variable else returns fallback.
