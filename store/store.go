@@ -1,6 +1,7 @@
 package store
 
 import (
+	"container/list"
 	"strconv"
 	"sync"
 )
@@ -8,14 +9,24 @@ import (
 // Store is an in-memory key/value string database.
 type Store struct {
 	mutex *sync.Mutex
+
+	// Key/value data is stored here
 	store map[string]string
+
+	// Uses an LRU Cache to remove oldest values
+	cache map[string]struct{}
+	ll    *list.List
+	max   int
 }
 
 // Service returns an empty store limited by a number of keys (use zero for no limit).
-func Service(size int) *Store {
-	s := &Store{}
-	s.mutex = &sync.Mutex{}
-	s.store = make(map[string]string)
+func Service(max int) *Store {
+	s := &Store{
+		mutex: &sync.Mutex{},
+		store: make(map[string]string),
+		ll:    list.New(),
+		max:   max,
+	}
 	return s
 }
 
@@ -123,4 +134,5 @@ func (s *Store) Flush() {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	s.store = make(map[string]string)
+	s.ll = list.New()
 }
