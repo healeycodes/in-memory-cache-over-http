@@ -2,6 +2,10 @@
 
 An in memory key/value cache over HTTP with no dependencies. Think of it as memcached lite.
 
+The API is accessed via GET request.
+
+Keys and values are strings. Integer math can be applied in some situations (like memcached).
+
 The caching method is Least Recently Used (LRU).
 
 - ### [Install](#Install)
@@ -44,10 +48,6 @@ Run.
 <br>
 
 ### Usage
-
-The API is accessed via GET request.
-
-Keys and values are strings. Integer math can be applied in some situations (like memcached).
 
 Adding an expire parameter is always optional. Not setting it, or setting it to zero means that the key will not expire. It uses **Unix time**.
 
