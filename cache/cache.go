@@ -2,6 +2,7 @@ package cache
 
 import (
 	"container/list"
+	"fmt"
 	"strconv"
 	"sync"
 	"time"
@@ -149,4 +150,11 @@ func (s *Store) Prepend(key string, value string, expire int) {
 func (s *Store) Flush() {
 	s.store = make(map[string]*list.Element)
 	s.ll = list.New()
+}
+
+// Stats returns up-to-date information about the cache
+func (s *Store) Stats() string {
+	// TODO (healeycodes)
+	// Use json package here
+	return fmt.Sprintf(`{"keyCount": %v, "maxSize": %v}`, len(s.store), s.max)
 }

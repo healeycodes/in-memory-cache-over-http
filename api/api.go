@@ -11,14 +11,20 @@ import (
 
 var s *cache.Store
 
-// Listen on PORT. Defaults to 8000.
+// Listen on PORT. Defaults to 8000
 func Listen() {
-	New()
+	new()
 	setup()
 	start()
 }
 
-// setup path handlers
+// New store
+func new() {
+	size, _ := strconv.Atoi(getEnv("SIZE", "0"))
+	s = cache.Service(size)
+}
+
+// Setup path handlers
 func setup() {
 	http.HandleFunc("/get", handle(Get))
 	http.HandleFunc("/set", handle(Set))
@@ -28,10 +34,11 @@ func setup() {
 	http.HandleFunc("/decrement", handle(Decrement))
 	http.HandleFunc("/append", handle(Append))
 	http.HandleFunc("/prepend", handle(Prepend))
+	http.HandleFunc("/stats", handle(Stats))
 	http.HandleFunc("/flush", handle(Flush))
 }
 
-// start http
+// Start http
 func start() {
 	port := getEnv("PORT", ":8000")
 	fmt.Println("Listening on", port)
@@ -41,8 +48,8 @@ func start() {
 	}
 }
 
-// Get a key from the store.
-// Status code: 200 if present, else 404.
+// Get a key from the store
+// Status code: 200 if present, else 404
 // e.g. ?key=foo
 func Get(w http.ResponseWriter, r *http.Request) {
 	value, exist := s.Get(r.URL.Query().Get("key"))
@@ -136,10 +143,11 @@ func Flush(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// New store
-func New() {
-	size, _ := strconv.Atoi(getEnv("SIZE", "0"))
-	s = cache.Service(size)
+// Stats of the cache
+// Status code: 200
+func Stats(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	w.Write([]byte(s.Stats()))
 }
 
 // Middleware
