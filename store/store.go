@@ -4,135 +4,143 @@ import (
 	"container/list"
 	"strconv"
 	"sync"
+	"time"
 )
 
-// Store is an in-memory key/value string database.
+// Store contains an LRU Cache
 type Store struct {
-	mutex *sync.Mutex
-
-	// Key/value data is stored here
-	store map[string]string
-
-	// Uses an LRU Cache to remove oldest values
-	cache map[string]struct{}
+	Mutex *sync.Mutex
+	store map[string]*list.Element
 	ll    *list.List
-	max   int
+	max   int // Zero for unlimited
 }
 
-// Service returns an empty store limited by a number of keys (use zero for no limit).
+// Node maps a value to a key
+type Node struct {
+	value  string
+	expire int // Unix time
+}
+
+// Service returns an empty store
 func Service(max int) *Store {
 	s := &Store{
-		mutex: &sync.Mutex{},
-		store: make(map[string]string),
+		Mutex: &sync.Mutex{},
+		store: make(map[string]*list.Element),
 		ll:    list.New(),
 		max:   max,
 	}
 	return s
 }
 
-// Set a key.
-func (s *Store) Set(key string, value string) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	s.store[key] = value
+// Set a key
+func (s *Store) Set(key string, value string, expire int) {
+	current, exist := s.store[key]
+	if exist != true {
+		s.store[key] = s.ll.PushFront(&Node{
+			value:  value,
+			expire: expire,
+		})
+		if s.ll.Len() > s.max {
+			// TODO: delete Back()
+		}
+		return
+	}
+	current.Value.(*Node).value = value
+	current.Value.(*Node).expire = expire
+	s.ll.MoveToFront(current)
 }
 
-// Get a key.
+// Get a key
 func (s *Store) Get(key string) (string, bool) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
 	current, exist := s.store[key]
 	if exist {
-		return current, true
+		if expire := int64(current.Value.(*Node).expire); expire == 0 || expire > time.Now().Unix() {
+			s.ll.MoveToFront(current)
+			return current.Value.(*Node).value, true
+		}
+		s.Delete(key, false) // Clean up expired item
 	}
 	return "", false
 }
 
-// Delete a key.
-func (s *Store) Delete(key string) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+// Delete an item
+func (s *Store) Delete(key string, lock bool) {
+	current, exist := s.store[key]
+	if exist != true {
+		return
+	}
+	s.ll.Remove(current)
 	delete(s.store, key)
 }
 
-// CheckAndSet a key. Sets only if the compare matches. Set the key if it doesn't exist.
-func (s *Store) CheckAndSet(key string, value string, compare string) bool {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+// CheckAndSet a key. Sets only if the compare matches. Set the key if it doesn't exist
+func (s *Store) CheckAndSet(key string, value string, expire int, compare string) bool {
 	current, exist := s.store[key]
-	if !exist || current == compare {
-		s.store[key] = value
+	if !exist || current.Value.(*Node).value == compare {
+		s.Set(key, value, expire)
 		return true
 	}
 	return false
 }
 
-// Increment a key by an amount. If doesn't exist, set to amount.
-func (s *Store) Increment(key string, value string) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+// Increment a key by an amount. Both value and amount should be integers. If doesn't exist, set to amount
+func (s *Store) Increment(key string, value string, expire int) error {
 	current, exist := s.store[key]
 	if !exist {
-		s.store[key] = value
-		return nil
+		s.Set(key, value, expire)
 	}
 
 	y, err := strconv.Atoi(value)
-	x, err := strconv.Atoi(current)
-	if err == nil {
-		s.store[key] = strconv.Itoa(x + y)
-		return nil
+	if err != nil {
+		return err
 	}
-	return err
+	x, err := strconv.Atoi(current.Value.(*Node).value)
+	if err != nil {
+		return err
+	}
+	s.Set(key, strconv.Itoa(x+y), expire)
+	return nil
 }
 
-// Decrement a key by an amount. If doesn't exist, set to amount.
-func (s *Store) Decrement(key string, value string) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+// Decrement a key by an amount. Both value and amount should be integers. If doesn't exist, set to amount
+func (s *Store) Decrement(key string, value string, expire int) error {
 	current, exist := s.store[key]
 	if !exist {
-		s.store[key] = value
-		return nil
+		s.Set(key, value, expire)
 	}
 
 	y, err := strconv.Atoi(value)
-	x, err := strconv.Atoi(current)
-	if err == nil {
-		s.store[key] = strconv.Itoa(x - y)
-		return nil
+	if err != nil {
+		return err
 	}
-	return err
+	x, err := strconv.Atoi(current.Value.(*Node).value)
+	if err != nil {
+		return err
+	}
+	s.Set(key, strconv.Itoa(x-y), expire)
+	return nil
 }
 
-// Append to a key.
-func (s *Store) Append(key string, value string) bool {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	current, exists := s.store[key]
-	if !exists {
-		return false
+// Append to a key
+func (s *Store) Append(key string, value string, expire int) {
+	current, exist := s.store[key]
+	if !exist {
+		s.Set(key, value, expire)
 	}
-	s.store[key] = current + value
-	return true
+	s.Set(key, current.Value.(*Node).value+value, expire)
 }
 
-// Prepend to a key.
-func (s *Store) Prepend(key string, value string) bool {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	current, exists := s.store[key]
-	if !exists {
-		return false
+// Prepend to a key
+func (s *Store) Prepend(key string, value string, expire int) {
+	current, exist := s.store[key]
+	if !exist {
+		s.Set(key, value, expire)
 	}
-	s.store[key] = value + current
-	return true
+	s.Set(key, value+current.Value.(*Node).value, expire)
 }
 
 // Flush all keys
 func (s *Store) Flush() {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	s.store = make(map[string]string)
+	s.store = make(map[string]*list.Element)
 	s.ll = list.New()
 }
