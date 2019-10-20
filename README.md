@@ -1,6 +1,6 @@
 # ⛷️
 
-An in memory key/value cache over HTTP with no dependencies. Think of it as memcached lite.
+An in-memory key/value cache over HTTP with no dependencies. Think of it as memcached lite.
 
 The API is accessed via GET request.
 
