@@ -8,15 +8,15 @@ Keys and values are strings. Integer math can be applied in some situations (lik
 
 The caching method is Least Recently Used (LRU).
 
-- ### [Install](#Install)
+#### [Install](#Install)
 
-- ### [Setup](#Setup)
+#### [Setup](#Setup)
 
-- ### [Usage](#Usage)
+#### [Usage](#Usage)
 
-- ### [Methods](#Methods)
+#### [Methods](#Methods)
 
-- ### [Tests](#Tests)
+#### [Tests](#Tests)
 
 <br>
 
