@@ -1,4 +1,4 @@
-# in memory cache over http
+# ⛷️
 
 An in memory key/value cache over HTTP with no dependencies. Kinda like memcached lite.
 
