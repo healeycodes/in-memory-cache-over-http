@@ -42,7 +42,7 @@ func (s *Store) Set(key string, value string, expire int) {
 			value:  value,
 			expire: expire,
 		})
-		if s.ll.Len() > s.max {
+		if s.max != 0 && s.ll.Len() > s.max {
 			toBeZeroed := s.ll.Remove(s.ll.Back()).(*Node)
 			toBeZeroed.value = ""
 			toBeZeroed.deleted = true
