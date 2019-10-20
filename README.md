@@ -4,6 +4,12 @@ An in memory key/value cache over HTTP with no dependencies. Kinda like memcache
 
 The caching method is Least Recently Used (LRU).
 
+[Install](#Install)
+[Setup](#Setup)
+[Usage](#Usage)
+[Methods](#Methods)
+[Tests](#Tests)
+
 <br>
 
 ### Install
@@ -119,7 +125,7 @@ Clear the cache. Delete all keys and values.
 
 <br>
 
-#### States `/stats`
+#### Stats `/stats`
 
 Return statistics about the cache.
 
