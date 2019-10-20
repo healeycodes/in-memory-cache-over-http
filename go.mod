@@ -1,3 +1,3 @@
-module github.com/healeycodes/key-value-store
+module healeycodes/in-memory-cache-over-http
 
 go 1.13

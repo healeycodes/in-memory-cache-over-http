@@ -1,4 +1,4 @@
-package store
+package cache
 
 import (
 	"container/list"
@@ -17,8 +17,9 @@ type Store struct {
 
 // Node maps a value to a key
 type Node struct {
-	value  string
-	expire int // Unix time
+	value   string
+	expire  int  // Unix time
+	deleted bool // Whether this should be cleaned up
 }
 
 // Service returns an empty store
@@ -41,7 +42,9 @@ func (s *Store) Set(key string, value string, expire int) {
 			expire: expire,
 		})
 		if s.ll.Len() > s.max {
-			// TODO: delete Back()
+			toBeZeroed := s.ll.Remove(s.ll.Back()).(*Node)
+			toBeZeroed.value = ""
+			toBeZeroed.deleted = true
 		}
 		return
 	}
@@ -54,17 +57,18 @@ func (s *Store) Set(key string, value string, expire int) {
 func (s *Store) Get(key string) (string, bool) {
 	current, exist := s.store[key]
 	if exist {
-		if expire := int64(current.Value.(*Node).expire); expire == 0 || expire > time.Now().Unix() {
+		if expire := int64(current.Value.(*Node).expire); current.Value.(*Node).deleted != true &&
+			(expire == 0 || expire > time.Now().Unix()) {
 			s.ll.MoveToFront(current)
 			return current.Value.(*Node).value, true
 		}
-		s.Delete(key, false) // Clean up expired item
+		s.Delete(key) // Clean up item
 	}
 	return "", false
 }
 
 // Delete an item
-func (s *Store) Delete(key string, lock bool) {
+func (s *Store) Delete(key string) {
 	current, exist := s.store[key]
 	if exist != true {
 		return
@@ -126,6 +130,7 @@ func (s *Store) Append(key string, value string, expire int) {
 	current, exist := s.store[key]
 	if !exist {
 		s.Set(key, value, expire)
+		return
 	}
 	s.Set(key, current.Value.(*Node).value+value, expire)
 }
@@ -135,6 +140,7 @@ func (s *Store) Prepend(key string, value string, expire int) {
 	current, exist := s.store[key]
 	if !exist {
 		s.Set(key, value, expire)
+		return
 	}
 	s.Set(key, value+current.Value.(*Node).value, expire)
 }
