@@ -18,9 +18,9 @@ type Store struct {
 
 // Node maps a value to a key
 type Node struct {
-	value   string
-	expire  int  // Unix time
-	deleted bool // Whether this should be cleaned up
+	key    string
+	value  string
+	expire int // Unix time
 }
 
 // Service returns an empty store
@@ -39,13 +39,12 @@ func (s *Store) Set(key string, value string, expire int) {
 	current, exist := s.store[key]
 	if exist != true {
 		s.store[key] = s.ll.PushFront(&Node{
+			key:    key,
 			value:  value,
 			expire: expire,
 		})
 		if s.max != 0 && s.ll.Len() > s.max {
-			toBeZeroed := s.ll.Remove(s.ll.Back()).(*Node)
-			toBeZeroed.value = ""
-			toBeZeroed.deleted = true
+			s.Delete(s.ll.Remove(s.ll.Back()).(*Node).key)
 		}
 		return
 	}
@@ -59,11 +58,10 @@ func (s *Store) Get(key string) (string, bool) {
 	current, exist := s.store[key]
 	if exist {
 		expire := int64(current.Value.(*Node).expire)
-		if current.Value.(*Node).deleted != true && (expire == 0 || expire > time.Now().Unix()) {
+		if expire == 0 || expire > time.Now().Unix() {
 			s.ll.MoveToFront(current)
 			return current.Value.(*Node).value, true
 		}
-		s.Delete(key) // Clean up item
 	}
 	return "", false
 }
