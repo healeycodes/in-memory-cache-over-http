@@ -58,8 +58,8 @@ func (s *Store) Set(key string, value string, expire int) {
 func (s *Store) Get(key string) (string, bool) {
 	current, exist := s.store[key]
 	if exist {
-		if expire := int64(current.Value.(*Node).expire); current.Value.(*Node).deleted != true &&
-			(expire == 0 || expire > time.Now().Unix()) {
+		expire := int64(current.Value.(*Node).expire)
+		if current.Value.(*Node).deleted != true && (expire == 0 || expire > time.Now().Unix()) {
 			s.ll.MoveToFront(current)
 			return current.Value.(*Node).value, true
 		}
