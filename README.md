@@ -146,4 +146,14 @@ Example.
 
 ### Tests
 
-**TODO**
+Run tests recursively.
+
+`go test ./...`
+
+Example output.
+
+```bash
+?       healeycodes/in-memory-cache-over-http   [no test files]
+ok      healeycodes/in-memory-cache-over-http/api       0.527s
+ok      healeycodes/in-memory-cache-over-http/cache     0.340s
+```
