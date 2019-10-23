@@ -34,6 +34,7 @@ func TestGet(t *testing.T) {
 	func() {
 		KEY := "name"
 		VALUE := "Andrew"
+
 		new()
 
 		s.Set(KEY, VALUE, 0)
@@ -65,6 +66,7 @@ func TestGet(t *testing.T) {
 func TestSet(t *testing.T) {
 	KEY := "name"
 	VALUE := "Alice"
+
 	new()
 
 	param := make(url.Values)
@@ -85,13 +87,36 @@ func TestSet(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	expected := ""
-	if rr.Body.String() != expected {
-		t.Errorf("Handler returned unexpected body: got %v want %v",
-			rr.Body.String(), expected)
-	}
-
 	if curValue, ok := s.Get(KEY); ok == false && curValue == VALUE {
 		t.Errorf("Value wasn't set in cache")
+	}
+}
+
+func TestDelete(t *testing.T) {
+	KEY := "name"
+	VALUE := "Alice"
+
+	new()
+	s.Set(KEY, VALUE, 0)
+
+	param := make(url.Values)
+	param["key"] = []string{KEY}
+
+	req, err := http.NewRequest("GET", "/delete?"+param.Encode(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(Delete)
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusNoContent {
+		t.Errorf("Handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	if _, ok := s.Get(KEY); ok == true {
+		t.Errorf("Value wasn't deleted")
 	}
 }
