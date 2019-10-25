@@ -120,3 +120,69 @@ func TestDelete(t *testing.T) {
 		t.Errorf("Value wasn't deleted")
 	}
 }
+
+func TestCheckAndSetFail(t *testing.T) {
+	KEY := "name"
+	ORIGVALUE := "Mary"
+	VALUE := "Alice"
+	COMPARE := "NotAlice"
+
+	new()
+	s.Set(KEY, ORIGVALUE, 0)
+
+	param := make(url.Values)
+	param["key"] = []string{KEY}
+	param["value"] = []string{VALUE}
+	param["expire"] = []string{"0"}
+	param["compare"] = []string{COMPARE}
+	req, err := http.NewRequest("GET", "/checkandset?"+param.Encode(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(CheckAndSet)
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusBadRequest {
+		t.Errorf("Handler returned wrong status code: got %v want %v",
+			status, http.StatusBadRequest)
+	}
+
+	if curValue, _ := s.Get(KEY); curValue != ORIGVALUE {
+		t.Errorf("Value was set even though the compare should have failed")
+	}
+}
+
+func TestCheckAndSetOk(t *testing.T) {
+	KEY := "name"
+	ORIGVALUE := "Mary"
+	VALUE := "Alice"
+	COMPARE := ORIGVALUE
+
+	new()
+	s.Set(KEY, ORIGVALUE, 0)
+
+	param := make(url.Values)
+	param["key"] = []string{KEY}
+	param["value"] = []string{VALUE}
+	param["expire"] = []string{"0"}
+	param["compare"] = []string{COMPARE}
+	req, err := http.NewRequest("GET", "/checkandset?"+param.Encode(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(CheckAndSet)
+	handler.ServeHTTP(rr, req)
+
+	if status := rr.Code; status != http.StatusNoContent {
+		t.Errorf("Handler returned wrong status code: got %v want %v",
+			status, http.StatusNoContent)
+	}
+
+	if curValue, _ := s.Get(KEY); curValue == ORIGVALUE {
+		t.Errorf("Value wasn't set even though the compare should have passed")
+	}
+}
