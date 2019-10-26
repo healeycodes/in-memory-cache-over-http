@@ -7,60 +7,58 @@ import (
 	"testing"
 )
 
-func TestGet(t *testing.T) {
+func TestGetMiss(t *testing.T) {
 	// Test cache miss
-	func() {
-		new()
+	new()
 
-		param := make(url.Values)
-		param["key"] = []string{"name"}
-		req, err := http.NewRequest("GET", "/get?"+param.Encode(), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+	param := make(url.Values)
+	param["key"] = []string{"name"}
+	req, err := http.NewRequest("GET", "/get?"+param.Encode(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-		rr := httptest.NewRecorder()
-		handler := http.HandlerFunc(Get)
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(Get)
 
-		handler.ServeHTTP(rr, req)
+	handler.ServeHTTP(rr, req)
 
-		if status := rr.Code; status != http.StatusNotFound {
-			t.Errorf("Handler returned wrong status code: got %v want %v",
-				status, http.StatusOK)
-		}
-	}()
+	if status := rr.Code; status != http.StatusNotFound {
+		t.Errorf("Handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+}
 
+func TestGetHit(t *testing.T) {
 	// Test cache hit
-	func() {
-		KEY := "name"
-		VALUE := "Andrew"
+	KEY := "name"
+	VALUE := "Andrew"
 
-		new()
+	new()
 
-		s.Set(KEY, VALUE, 0)
+	s.Set(KEY, VALUE, 0)
 
-		param := make(url.Values)
-		param["key"] = []string{KEY}
-		req, err := http.NewRequest("GET", "/get?"+param.Encode(), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+	param := make(url.Values)
+	param["key"] = []string{KEY}
+	req, err := http.NewRequest("GET", "/get?"+param.Encode(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-		rr := httptest.NewRecorder()
-		handler := http.HandlerFunc(Get)
-		handler.ServeHTTP(rr, req)
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(Get)
+	handler.ServeHTTP(rr, req)
 
-		if status := rr.Code; status != http.StatusOK {
-			t.Errorf("Handler returned wrong status code: got %v want %v",
-				status, http.StatusOK)
-		}
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("Handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
 
-		expected := VALUE
-		if rr.Body.String() != expected {
-			t.Errorf("Handler returned unexpected body: got %v want %v",
-				rr.Body.String(), expected)
-		}
-	}()
+	expected := VALUE
+	if rr.Body.String() != expected {
+		t.Errorf("Handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
 }
 
 func TestSet(t *testing.T) {
