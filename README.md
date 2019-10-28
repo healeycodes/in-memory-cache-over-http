@@ -18,6 +18,8 @@ The caching method is Least Recently Used (LRU).
 
 #### [Tests](#Tests)
 
+#### [Contributing](#Contributing)
+
 <br>
 
 ### Install
@@ -157,3 +159,11 @@ Example output.
 ok      healeycodes/in-memory-cache-over-http/api       0.527s
 ok      healeycodes/in-memory-cache-over-http/cache     0.340s
 ```
+
+<br>
+
+### Contributing
+
+Feel free to raise any issues and pull requests 👍
+
+There is no roadmap for this project. My main motivations were to learn more about Go!
