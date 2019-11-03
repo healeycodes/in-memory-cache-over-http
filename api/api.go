@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"healeycodes/in-memory-cache-over-http/cache"
 )
@@ -155,6 +156,9 @@ func handle(f func(http.ResponseWriter, *http.Request)) func(w http.ResponseWrit
 	return func(w http.ResponseWriter, r *http.Request) {
 		s.Mutex.Lock()
 		defer s.Mutex.Unlock()
+		if getEnv("APP_ENV", "") != "production" {
+			fmt.Println(time.Now(), r.URL)
+		}
 		f(w, r)
 	}
 }

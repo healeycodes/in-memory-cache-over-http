@@ -34,16 +34,20 @@ The caching method is Least Recently Used (LRU).
 
 ### Setup
 
-Set your PORT environmental variable.
+- Set your PORT environmental variable.
+- Set APP_ENV to `production` to turn off logging.
 
 ```bash
 # Linux/macOS
 export PORT=8000
+export APP_ENV=production
 
 # Command Prompt
 set PORT=8000
+set APP_ENV=production
 
 # PowerShell
+$env:PORT = "8000"
 $env:PORT = "8000"
 ```
 
