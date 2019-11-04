@@ -156,6 +156,12 @@ Example.
 
 ### Tests
 
+The majority of tests are integration tests that test API routes while checking the underlying cache.
+
+There are some unit tests for the cache.
+
+<br>
+
 Run tests recursively.
 
 `go test ./...`

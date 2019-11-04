@@ -14,14 +14,14 @@ var s *cache.Store
 
 // Listen on PORT. Defaults to 8000
 func Listen() {
-	new()
+	size, _ := strconv.Atoi(getEnv("SIZE", "0"))
+	new(size)
 	setup()
 	start()
 }
 
 // New store
-func new() {
-	size, _ := strconv.Atoi(getEnv("SIZE", "0"))
+func new(size int) {
 	s = cache.Service(size)
 }
 
@@ -136,6 +136,7 @@ func Prepend(w http.ResponseWriter, r *http.Request) {
 		r.URL.Query().Get("key"),
 		r.URL.Query().Get("value"),
 		getExpire(r.URL.Query().Get("expire")))
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // Flush all keys
@@ -152,6 +153,7 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 }
 
 // Middleware
+// Logging, and locking of the cache
 func handle(f func(http.ResponseWriter, *http.Request)) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s.Mutex.Lock()
