@@ -182,6 +182,8 @@ ok      healeycodes/in-memory-cache-over-http/cache     0.340s
 
 <br>
 
+There's a GitHub workflow that builds and tests the repository on push.
+
 ### Contributing
 
 Feel free to raise any issues and pull requests 👍
