@@ -12,6 +12,12 @@ Keys and values are strings. Integer math can be applied in some situations (lik
 
 The caching method is Least Recently Used (LRU).
 
+<br>
+
+[![](https://github.com/healeycodes/in-memory-cache-over-http/workflows/Go/badge.svg)](https://github.com/healeycodes/in-memory-cache-over-http/actions?query=workflow%3AGo)
+
+<br>
+
 #### [Install](#Install)
 
 #### [Setup](#Setup)
