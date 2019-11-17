@@ -75,7 +75,7 @@ GET `localhost:8000/set?key=name&value=Andrew&expire=1571577784` (204 status cod
 
 Retrieve the value located at `name`.
 
-GET `localhost:8000/get?key=Andrew` (200 status code, body: `Andrew`)
+GET `localhost:8000/get?key=name` (200 status code, body: `Andrew`)
 
 <br>
 
