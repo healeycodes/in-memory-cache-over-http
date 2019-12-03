@@ -54,7 +54,7 @@ set APP_ENV=production
 
 # PowerShell
 $env:PORT = "8000"
-$env:PORT = "8000"
+$env:APP_ENV = "production"
 ```
 
 Run.
