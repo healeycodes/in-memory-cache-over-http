@@ -156,8 +156,6 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 // Logging, and locking of the cache
 func handle(f func(http.ResponseWriter, *http.Request)) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.Mutex.Lock()
-		defer s.Mutex.Unlock()
 		if getEnv("APP_ENV", "") != "production" {
 			fmt.Println(time.Now(), r.URL)
 		}

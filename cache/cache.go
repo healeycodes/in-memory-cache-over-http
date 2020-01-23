@@ -36,6 +36,13 @@ func Service(max int) *Store {
 
 // Set a key
 func (s *Store) Set(key string, value string, expire int) {
+	s.Mutex.Lock()
+	defer s.Mutex.Unlock()
+	s.set(key, value, expire)
+}
+
+// Internal set
+func (s *Store) set(key string, value string, expire int) {
 	current, exist := s.store[key]
 	if exist != true {
 		s.store[key] = s.ll.PushFront(&Node{
@@ -44,7 +51,7 @@ func (s *Store) Set(key string, value string, expire int) {
 			expire: expire,
 		})
 		if s.max != 0 && s.ll.Len() > s.max {
-			s.Delete(s.ll.Remove(s.ll.Back()).(*Node).key)
+			s.delete(s.ll.Remove(s.ll.Back()).(*Node).key)
 		}
 		return
 	}
@@ -55,6 +62,8 @@ func (s *Store) Set(key string, value string, expire int) {
 
 // Get a key
 func (s *Store) Get(key string) (string, bool) {
+	s.Mutex.Lock()
+	defer s.Mutex.Unlock()
 	current, exist := s.store[key]
 	if exist {
 		expire := int64(current.Value.(*Node).expire)
@@ -68,6 +77,13 @@ func (s *Store) Get(key string) (string, bool) {
 
 // Delete an item
 func (s *Store) Delete(key string) {
+	s.Mutex.Lock()
+	defer s.Mutex.Unlock()
+	s.delete(key)
+}
+
+// Internal delete
+func (s *Store) delete(key string) {
 	current, exist := s.store[key]
 	if exist != true {
 		return
@@ -78,9 +94,11 @@ func (s *Store) Delete(key string) {
 
 // CheckAndSet a key. Sets only if the compare matches. Set the key if it doesn't exist
 func (s *Store) CheckAndSet(key string, value string, expire int, compare string) bool {
+	s.Mutex.Lock()
+	defer s.Mutex.Unlock()
 	current, exist := s.store[key]
 	if !exist || current.Value.(*Node).value == compare {
-		s.Set(key, value, expire)
+		s.set(key, value, expire)
 		return true
 	}
 	return false
@@ -88,9 +106,11 @@ func (s *Store) CheckAndSet(key string, value string, expire int, compare string
 
 // Increment a key by an amount. Both value and amount should be integers. If doesn't exist, set to amount
 func (s *Store) Increment(key string, value string, expire int) error {
+	s.Mutex.Lock()
+	defer s.Mutex.Unlock()
 	current, exist := s.store[key]
 	if !exist {
-		s.Set(key, value, expire)
+		s.set(key, value, expire)
 	}
 
 	y, err := strconv.Atoi(value)
@@ -101,15 +121,17 @@ func (s *Store) Increment(key string, value string, expire int) error {
 	if err != nil {
 		return err
 	}
-	s.Set(key, strconv.Itoa(x+y), expire)
+	s.set(key, strconv.Itoa(x+y), expire)
 	return nil
 }
 
 // Decrement a key by an amount. Both value and amount should be integers. If doesn't exist, set to amount
 func (s *Store) Decrement(key string, value string, expire int) error {
+	s.Mutex.Lock()
+	defer s.Mutex.Unlock()
 	current, exist := s.store[key]
 	if !exist {
-		s.Set(key, value, expire)
+		s.set(key, value, expire)
 	}
 
 	y, err := strconv.Atoi(value)
@@ -120,38 +142,46 @@ func (s *Store) Decrement(key string, value string, expire int) error {
 	if err != nil {
 		return err
 	}
-	s.Set(key, strconv.Itoa(x-y), expire)
+	s.set(key, strconv.Itoa(x-y), expire)
 	return nil
 }
 
 // Append to a key
 func (s *Store) Append(key string, value string, expire int) {
+	s.Mutex.Lock()
+	defer s.Mutex.Unlock()
 	current, exist := s.store[key]
 	if !exist {
-		s.Set(key, value, expire)
+		s.set(key, value, expire)
 		return
 	}
-	s.Set(key, current.Value.(*Node).value+value, expire)
+	s.set(key, current.Value.(*Node).value+value, expire)
 }
 
 // Prepend to a key
 func (s *Store) Prepend(key string, value string, expire int) {
+	s.Mutex.Lock()
+	defer s.Mutex.Unlock()
 	current, exist := s.store[key]
 	if !exist {
-		s.Set(key, value, expire)
+		s.set(key, value, expire)
 		return
 	}
-	s.Set(key, value+current.Value.(*Node).value, expire)
+	s.set(key, value+current.Value.(*Node).value, expire)
 }
 
 // Flush all keys
 func (s *Store) Flush() {
+	s.Mutex.Lock()
+	defer s.Mutex.Unlock()
 	s.store = make(map[string]*list.Element)
 	s.ll = list.New()
 }
 
 // Stats returns up-to-date information about the cache
 func (s *Store) Stats() string {
+	s.Mutex.Lock()
+	defer s.Mutex.Unlock()
 	// TODO (healeycodes)
 	// Use json package here
 	return fmt.Sprintf(`{"keyCount": %v, "maxSize": %v}`, len(s.store), s.max)
