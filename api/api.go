@@ -140,6 +140,7 @@ func Prepend(w http.ResponseWriter, r *http.Request) {
 }
 
 // Flush all keys
+// Status code: 204
 func Flush(w http.ResponseWriter, r *http.Request) {
 	s.Flush()
 	w.WriteHeader(http.StatusNoContent)
@@ -152,8 +153,8 @@ func Stats(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(s.Stats()))
 }
 
-// Middleware
-// Logging, and locking of the cache
+// Main middleware
+// Just some development logging for now
 func handle(f func(http.ResponseWriter, *http.Request)) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if getEnv("APP_ENV", "") != "production" {
