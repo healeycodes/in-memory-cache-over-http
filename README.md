@@ -1,34 +1,16 @@
-# ⛷️
+# ⛷️ in-memory-cache-over-http
 
 > My blog post: [Cloning Memcached with Go](https://healeycodes.com/go/tutorial/beginners/showdev/2019/10/21/cloning-memcached-with-go.html)
 
 <br>
 
-An in-memory key/value cache over HTTP with no dependencies. Think of it as memcached lite.
+An in-memory key/value cache over HTTP with no dependencies. Think of it as Memcached lite.
 
 The API is accessed via GET request.
 
-Keys and values are strings. Integer math can be applied in some situations (like memcached).
+Keys and values are strings. Integer math can be applied in some situations (like Memcached).
 
 The caching method is Least Recently Used (LRU).
-
-<br>
-
-[![](https://github.com/healeycodes/in-memory-cache-over-http/workflows/Go/badge.svg)](https://github.com/healeycodes/in-memory-cache-over-http/actions?query=workflow%3AGo)
-
-<br>
-
-#### [Install](#Install)
-
-#### [Setup](#Setup)
-
-#### [Usage](#Usage)
-
-#### [Methods](#Methods)
-
-#### [Tests](#Tests)
-
-#### [Contributing](#Contributing)
 
 <br>
 
@@ -42,6 +24,7 @@ The caching method is Least Recently Used (LRU).
 
 - Set your PORT environmental variable.
 - Set APP_ENV to `production` to turn off logging.
+- Set SIZE to limit the number of key/value pairs, (0 is default - unlimited).
 
 ```bash
 # Linux/macOS
@@ -57,9 +40,13 @@ $env:PORT = "8000"
 $env:APP_ENV = "production"
 ```
 
-Run.
+- Run
 
 `go run .\main.go`
+
+- Build
+
+`go build`
 
 <br>
 
@@ -182,10 +169,9 @@ ok      healeycodes/in-memory-cache-over-http/cache     0.340s
 
 <br>
 
-There's a GitHub workflow that builds and tests the repository on push.
 
 ### Contributing
 
 Feel free to raise any issues and pull requests 👍
 
-There is no roadmap for this project. My main motivations were to learn more about Go!
+There is no road map for this project. My main motivations were to learn more about Go!
