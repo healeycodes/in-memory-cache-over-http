@@ -56,9 +56,9 @@ Adding an expire parameter is always optional. Not setting it, or setting it to 
 
 Example usage.
 
-Set `name` to be `Andrew` with an expire time of `10/20/2019 @ 1:23pm (UTC)`
+Set `name` to be `Andrew` with an expire time of `01/01/2030 @ 12:00am (UTC)`
 
-GET `localhost:8000/set?key=name&value=Andrew&expire=1571577784` (204 status code)
+GET `localhost:8000/set?key=name&value=Andrew&expire=1893456000` (204 status code)
 
 Retrieve the value located at `name`.
 
