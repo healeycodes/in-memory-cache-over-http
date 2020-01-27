@@ -4,6 +4,10 @@
 
 <br>
 
+[![](https://github.com/healeycodes/in-memory-cache-over-http/workflows/Go/badge.svg)](https://github.com/healeycodes/in-memory-cache-over-http/actions?query=workflow%3AGo)
+
+<br>
+
 An in-memory key/value cache over HTTP with no dependencies. Think of it as Memcached lite.
 
 The API is accessed via GET request.
