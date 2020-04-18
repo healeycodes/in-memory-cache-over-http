@@ -8,7 +8,7 @@
 
 <br>
 
-An in-memory key/value cache over HTTP with no dependencies. Think of it as Memcached lite.
+An in-memory key/value cache server over HTTP with no dependencies. Think of it as Memcached lite.
 
 The API is accessed via GET request.
 
