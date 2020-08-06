@@ -8,11 +8,11 @@
 
 <br>
 
-An in-memory key/value cache server over HTTP with no dependencies. Think of it as Memcached lite.
+An in-memory key/value cache server over HTTP with no dependencies.
 
 The API is accessed via GET request.
 
-Keys and values are strings. Integer math can be applied in some situations (like Memcached).
+Keys and values are strings. Integer math can be applied in some situations (like Memcached does).
 
 The caching method is Least Recently Used (LRU).
 
